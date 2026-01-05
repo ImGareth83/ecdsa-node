@@ -121,6 +121,121 @@ To pass **Phase 3**:
 
 > Hint: https://github.com/paulmillr/noble-secp256k1 is a great library to leverage for this final phase!
 
+## My Implementation Details
+
+This section explains the main methods and components of the implementation.
+
+### Client-Side Components
+
+#### `client/src/Transfer.jsx`
+
+The Transfer component handles transaction creation and signing.
+
+**Main Methods:**
+
+- **`generateSignature(privateKey, sender, recipient, amount)`**
+  - Generates an ECDSA signature for a transaction
+  - Cleans and validates the private key
+  - Creates a message by concatenating sender address, recipient address, and amount
+  - Hashes the message using keccak256
+  - Signs the message hash with the private key using secp256k1
+  - Returns both the signature object and recovery ID (for consistent public key recovery on the server)
+  - Supports decimal amounts
+
+- **`transfer(evt)`**
+  - Handles the transfer form submission
+  - Validates all required fields (address, recipient, amount, private key)
+  - Calls `generateSignature()` to create a cryptographic signature
+  - Converts the signature object to a hex string using `signatureToHex()`
+  - Sends the transaction (message, signature, recovery ID, recipient, amount) to the server's `/transfer` endpoint
+  - Updates the sender's balance on successful transfer
+
+#### `client/src/cryptoUtils.js`
+
+Utility functions for cryptographic operations.
+
+**Main Methods:**
+
+- **`cleanPrivateKey(privateKey)`**
+  - Cleans and validates a private key hex string
+  - Removes '0x' prefix if present
+  - Validates that the string contains only hexadecimal characters
+  - Ensures even length by padding with a leading zero if needed
+  - Returns the cleaned private key or null if invalid
+
+- **`signatureToHex(signature)`**
+  - Converts a signature object (from `secp.sign()`) to a hex string
+  - Handles DER-encoded signature format
+  - Returns the signature as a hex string for transmission to the server
+
+#### `client/src/Wallet.jsx`
+
+The Wallet component displays wallet information and generates addresses from private keys.
+
+**Main Methods:**
+
+- **`getPublicKeyFromPrivateKey(privateKey)`**
+  - Derives a public key from a private key
+  - Uses `cleanPrivateKey()` to validate the input
+  - Generates an uncompressed public key using `secp.getPublicKey()`
+  - Returns the public key as a Uint8Array
+
+- **`getAddressFromPublicKey(publicKey)`**
+  - Converts a public key to an Ethereum-style address
+  - Removes the first byte (compression indicator) from the public key
+  - Hashes the remaining bytes using keccak256
+  - Takes the last 20 bytes and formats as "0x" + hex string
+  - Returns the wallet address
+
+- **`onChange(evt)`**
+  - Handles private key input changes
+  - Generates the public key and address from the entered private key
+  - Fetches the balance for the generated address from the server
+  - Updates the UI with the address and balance
+
+### Server-Side Components
+
+#### `server/index.js`
+
+The Express server handles balance queries and transfer processing with signature verification.
+
+**Main Methods:**
+
+- **`GET /balance/:address`**
+  - Retrieves the balance for a given address
+  - Returns 0 if the address doesn't exist in the balances object
+  - Logs the request for debugging
+
+- **`POST /transfer`**
+  - Processes a signed transaction transfer
+  - **Signature Verification:**
+    - Receives message, signature (hex), recovery ID, recipient, and amount from the client
+    - Hashes the message using keccak256 (same method as client)
+    - Recovers the public key from the signature using the provided recovery ID
+    - Verifies the signature is valid for the recovered public key
+  - **Address Derivation:**
+    - Derives the sender's Ethereum address from the recovered public key
+    - Uses the same method as the client: keccak256 hash of public key (without first byte), take last 20 bytes
+  - **Message Validation:**
+    - Reconstructs the expected message from the recovered sender address, recipient, and amount
+    - Verifies the received message matches the expected message (prevents tampering)
+  - **Transfer Processing:**
+    - Validates the amount is a positive number
+    - Checks the sender has sufficient balance
+    - Updates balances for both sender and recipient
+    - Returns the updated balances
+
+- **`setInitialBalance(address)`**
+  - Helper function to initialize a balance of 0 for new addresses
+  - Called before processing transfers to ensure addresses exist in the balances object
+
+### Security Features
+
+1. **Signature Verification**: All transfers require a valid ECDSA signature that can be verified against the recovered public key
+2. **Message Integrity**: The server reconstructs and verifies the message to prevent tampering with transaction details
+3. **Recovery ID Consistency**: Using a consistent recovery ID ensures reliable public key recovery
+4. **Decimal Amount Support**: Supports decimal amounts for more flexible transactions
+
 ## Sample Solution
 
 Want to peek at a solution while you craft your own? Check [this repo](https://github.com/AlvaroLuken/exchange-secp256k1) out.
