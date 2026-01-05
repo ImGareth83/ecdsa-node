@@ -1,127 +1,120 @@
-## Project 1: Build a Web App using ECDSA
+## ECDSA & Blockchain Transaction Authentication
 
-This project is an example of using a client and server to facilitate transfers between different addresses. Since there is just a single server on the back-end handling transfers, this is clearly very centralized. We won't worry about distributed consensus for this project.
+### Description
 
-However, something that we would like to incorporate is Public Key Cryptography. By using Elliptic Curve Digital Signatures we can make it so the server only allows transfers that have been signed for by the person who owns the associated address.
+This project is an educational exercise focused on learning ECDSA (Elliptic Curve Digital Signature Algorithm) and understanding how it works at the blockchain node level. The main purpose is to demonstrate how ECDSA authenticates that transactions are indeed from the sender, which is a fundamental security mechanism in blockchain systems.
 
-## Video Instructions
-For an overview of this project as well as getting started instructions, check out the following video:
+The application consists of a React-based client that generates and signs transactions using ECDSA, and an Express server (simulating a blockchain node) that verifies signatures and processes transfers. The server demonstrates the node's role in authenticating transactions by recovering the public key from the signature and verifying that the transaction was signed by the private key corresponding to the sender's address.
 
-https://www.youtube.com/watch?v=GU5vlKaNvmI
+Since there is just a single server on the back-end handling transfers, this is clearly very centralized. We won't worry about distributed consensus for this project—the focus is purely on understanding ECDSA signature generation, verification, and how blockchain nodes authenticate transaction senders.
 
-If you are interested in a text-based guide, please read on below. ⬇️
+## Installation and Setup
 
-## Setup Instructions
- 
-### Client
+### Prerequisites
 
-The client folder contains a [react app](https://reactjs.org/) using [vite](https://vitejs.dev/). To get started, follow these steps:
+- Node.js (v14 or higher recommended)
+- npm (comes with Node.js)
 
-1. Open up a terminal in the `/client` folder
-2. Run `npm install` to install all the dependencies
-3. Run `npm run dev` to start the application 
-4. Now you should be able to visit the app at http://localhost:5173/
+### Server Installation
 
-### Server
+1. Navigate to the server directory:
+   ```bash
+   cd server
+   ```
 
-The server folder contains a Node.js server using [express](https://expressjs.com/). To run the server, follow these steps:
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-1. Open a terminal within the `/server` folder 
-2. Run `npm install` to install all the dependencies 
-3. Run `node index` to start the server
+3. Start the server:
+   ```bash
+   npm run dev
+   ```
+   
+   The server will start on `http://localhost:3042` (or the port specified in `server/index.js`).
 
-_Hint_ - > Run `npm i -g nodemon` and then run `nodemon index` instead of `node index` to automatically restart the server on any changes!
+### Client Installation
 
-The application should connect to the default server port (3042) automatically!
+1. Navigate to the client directory:
+   ```bash
+   cd client
+   ```
 
-## 🏁 Your Goal: Set Up a Secure ECDSA-based Web Application
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-Only read this section **AFTER** you've followed the **Setup Instructions** above!
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   
+   The client will start on `http://localhost:5173` (or the port shown in the terminal).
 
-This project begins with a client that is allowed to transfer any funds from any account to another account. That's not very secure. By applying digital signatures we can require that only the user with the appropriate private key can create a signature that will allow them to move funds from one account to the other. Then, the server can verify the signature to move funds from one account to another.
+### Running the Application
 
-Your project is considered **done** when you have built the following features in a secure way (NOTE: your project is not final if it still uses private keys anywhere on the client side!):
-- Incorporate public key cryptography so transfers can only be completed with a valid signature
-- The person sending the transaction should have to verify that they own the private key corresponding to the address that is sending funds
+1. **Start the server first** (in one terminal):
+   ```bash
+   cd server
+   npm run dev
+   ```
 
-> 🤔 While you're working through this project consider the security implications of your implementation decisions. What if someone intercepted a valid signature, would they be able to replay that transfer by sending it back to the server?
+2. **Start the client** (in another terminal):
+   ```bash
+   cd client
+   npm run dev
+   ```
 
-## Recommended Approach To Building This Project
+3. Open your browser and navigate to the client URL (typically `http://localhost:5173`).
 
-There are many ways to approach this project. The goal is to create a client-server webapp that safely validates transaction intents, using public key cryptography, between accounts. Below is a phased approach that clearly details out a roadmap to solving this goal:
+**Note:** Both the server and client need to be running simultaneously for the application to work properly. The client makes API calls to the server for balance queries and transfer processing.
 
-### **Phase 1**
-- You have successfully git cloned this project onto your local machine
-- You installed all dependencies by running `npm i` both in the `/client` and in the `/server` folders
-- You have a website running on http://localhost:5173/ by running `npm run dev` in the `/client` folder
-- You have a server process running by running `nodemon index` in the `/server` folder (remember to run `npm i -g nodemon` prior to this)
-- A balance displays on the `Wallet Address` input box when you type in "0x1", "0x2" and "0x3"
-- When you type in "0x1" (or any of the other accounts listed in the `server/index.js` file, you can also send an amount to any other account (using the right-hand column); this action withdraws whatever amount you send from the first account too. You should see these changes in real time, especially if you are using `nodemon` to run your server process
-- Even if you reload the page on http://localhost:5173/, the balance changes you've previously made still remain - this is because it is your server actually keeping track of balances, not your client (ie. your front-end)
+## Testing
 
-If all of these are complete, move on to **Phase 2**! ⬇️
+To test the application, you can use a hard-coded private key and make a transaction to one of the hard-coded wallet addresses.
 
-### **Phase 2**
+### Hard-Coded Wallet Addresses
 
-At this point, our app security is not very good. If we deploy this app now, anyone can access any balance and make changes. This means that Alice (or really.. anyone!) can type in "0x2" and transfer an amount, even if that account is not actually her account! We need to find a way to assign ownership of accounts. 
+The server has the following addresses with initial balances:
+- `0x1` - Balance: 100
+- `0x2` - Balance: 50
+- `0x3` - Balance: 75
+- `0xe16718ad21c1a2f96c667eaa8298df61e6ec50e8` - Balance: 188
 
-Let's incorporate some of the cryptography we've learned in the previous lessons to build a half-baked solution; we will use [Ethereum Cryptography library](https://www.npmjs.com/package/ethereum-cryptography/v/1.2.0).
+### Testing Steps
 
-> Please use v1.2.0 of the Ethereum Cryptography library!
+1. **Enter a Private Key**: In the Wallet component, enter the following test private key:
+   ```
+   e9f66d1de4f06a3f6ceaeebc05b16daa9110fdb39d6c483a6f5d0475a1d32ccf
+   ```
+   This will generate a wallet address and display its balance.
 
-Start a new terminal tab and run `npm i ethereum-cryptography@1.2.0` - this will pull down functions to cryptographically sign and verify data.
+2. **Make a Transfer**: 
+   - In the Transfer component, enter:
+     - **Recipient**: One of the hard-coded addresses (e.g., `0x1`, `0x2`, `0x3`, or `0xe16718ad21c1a2f96c667eaa8298df61e6ec50e8`)
+     - **Amount**: Any positive number (e.g., `10`)
+     - **Private Key**: The same test private key from step 1
+   
+3. **Verify the Transaction**:
+   - The transaction should be signed using ECDSA
+   - The server will verify the signature and authenticate that the transaction is from the sender
+   - The balances will be updated for both sender and recipient
+   - Check the updated balances in the Wallet component
 
-> Remember, you must run `npm i ethereum-cryptography@1.2.0` in BOTH the `/client` and the `/server` folder!
+### Testing ECDSA Authentication
 
-In **Phase 2**, your job is to implement private keys so that when a user interacts with your application, the ONLY way they are allowed to move funds is if they provide the **private key** of the account they want to move funds from.
+The key learning point is observing how the server authenticates the transaction:
+- The client signs the transaction with the private key
+- The server recovers the public key from the signature
+- The server derives the sender's address from the recovered public key
+- The server verifies the signature matches the recovered public key
+- Only if all checks pass will the transaction be processed
 
-The key change is to change the `balances` object in the `/server/index.js` file to use **real public keys**.
+This demonstrates how blockchain nodes use ECDSA to verify that transactions are indeed from the claimed sender.
 
-You can do this programmatically (by editting the `/server/index.js` file) or using a script with the following functions:
-
-```js
-const secp = require("ethereum-cryptography/secp256k1");
-const { toHex } = require("ethereum-cryptography/utils");
-
-const privateKey = secp.utils.randomPrivateKey();
-
-console.log('private key: ', toHex(privateKey));
-
-const publicKey = secp.getPublicKey(privateKey);
-
-console.log('public key', toHex(publicKey));
-```
-
-The script above will create a brand new random private key, and then get its equivalent public key, each time you run it.
-
-Now you have the foundation to implement public key cryptography into your project!
-
-To pass **Phase 2**:
-
-- You have replaced "0x1", "0x2" and "0x3" in the `server/index.js` file with actual public keys generated by using the [Ethereum Cryptography library](https://www.npmjs.com/package/ethereum-cryptography/v/1.2.0). These public keys, in this suggested flow, were generated from a randomly generated private key assigned to the user. The method used to generate the public key was: `secp.getPublicKey(privateKey)`.
-
-> Extra credit: Make your accounts look like Ethereum addresses! (ie. instead of the long public key hexadecimal format, use the "0x" + 20 hex characters format of Ethereum - this is a fun challenge to get right!)
-
-- You are able to transfer funds between the addresses, via public keys/addresses of your server's users, that have been generated by inputting a private key into the webapp.
- 
-### **Phase 3**
-
-Asking users to input a private key directly into your webapp is a big no-no! 🚫
-
-The next step for YOU to accomplish is to make it so that you can send a signed transaction to the server, via your webapp; the server should the authenticate that transaction by deriving the public key associated with it. If that public key has funds, move the funds to the intended recipient. All of this should be accomplished via digital signatures alone.
-
-Hint: In `index.js`, you will want to:
-- get a signature from the client-side application
-- recover the public address from the signature itself
-- validate the recovered address against your server's `balances` object
-
-To pass **Phase 3**:
-
-- Your app is able to validate and move funds using digital signatures.
-
-> Hint: https://github.com/paulmillr/noble-secp256k1 is a great library to leverage for this final phase!
-
-## My Implementation Details
+## Repo Details
 
 This section explains the main methods and components of the implementation.
 
@@ -235,3 +228,7 @@ The Express server handles balance queries and transfer processing with signatur
 2. **Message Integrity**: The server reconstructs and verifies the message to prevent tampering with transaction details
 3. **Recovery ID Consistency**: Using a consistent recovery ID ensures reliable public key recovery
 4. **Decimal Amount Support**: Supports decimal amounts for more flexible transactions
+
+## Reference
+
+This project is based on Alchemy University's Week 1 project, which focuses on learning ECDSA and understanding how blockchain nodes authenticate transactions.
