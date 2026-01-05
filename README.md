@@ -235,7 +235,3 @@ The Express server handles balance queries and transfer processing with signatur
 2. **Message Integrity**: The server reconstructs and verifies the message to prevent tampering with transaction details
 3. **Recovery ID Consistency**: Using a consistent recovery ID ensures reliable public key recovery
 4. **Decimal Amount Support**: Supports decimal amounts for more flexible transactions
-
-## Sample Solution
-
-Want to peek at a solution while you craft your own? Check [this repo](https://github.com/AlvaroLuken/exchange-secp256k1) out.
